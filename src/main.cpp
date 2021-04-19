@@ -8,8 +8,8 @@ int R=80;
 int a1,a2,b1,b2;
 int cx,cy;
 
-int hourstart=2;
-int minstart=23;
+int hourstart=3;
+int minstart=5;
 uint32_t start;
 uint32_t i;
 void setup()
@@ -33,15 +33,23 @@ cy=120-(R);// center
 
 for (int i=1; i<=60; ++i) //рисуем 48 делений
 {
-if (i%5==0) {myGLCD.setColor(255, 0, 0);}// пятиминутки красные
-else{myGLCD.setColor(100, 238, 100);};
-
-
 a1 = cx+R + 0.95*R*sin(i*2*PI /60);
 b1 = cy+R + 0.95*R*cos(i*2*PI /60);
 a2 = cx+R + R*sin(i*2*PI /60);
 b2 = cy+R + R*cos(i*2*PI /60);
-myGLCD.drawLine(a1,b1,a2,b2);
+
+if (i%5==0) {
+  myGLCD.setColor(255, 0, 0);
+  myGLCD.drawCircle(a2, b2, 3);
+}// пятиминутки красные
+else{
+  myGLCD.setColor(100, 238, 100);
+  myGLCD.drawLine(a1,b1,a2,b2);
+};
+
+
+
+
 };// циферблат готов
 
 i=hourstart*60*60+minstart*60;
