@@ -8,8 +8,10 @@ int R=80;
 int a1,a2,b1,b2;
 int cx,cy;
 
-
-
+int hourstart=2;
+int minstart=23;
+uint32_t start;
+uint32_t i;
 void setup()
 {
  uart.begin();//9600 
@@ -42,13 +44,16 @@ b2 = cy+R + R*cos(i*2*PI /60);
 myGLCD.drawLine(a1,b1,a2,b2);
 };// циферблат готов
 
+i=hourstart*60*60+minstart*60;
 }
 
 int a1p, b1p,a1pm,b1pm,a1ph,b1ph;
 
-void drawSecPaw(int i,int len){
- a1 = cx+R+ 0.9*len*sin((60-i)*2*PI/60+PI);
- b1 = cy+R+ 0.9*len*cos((60-i)*2*PI/60+PI);
+void drawSecPaw(int s,int len){
+ //a1 = cx+R+ 0.9*len*sin((60-i)*2*PI/60+PI);
+ //b1 = cy+R+ 0.9*len*cos((60-i)*2*PI/60+PI);
+ a1 = cx+R + len*cos(((s*PI)/30)-PI/2);
+ b1 = cy+R + len*sin(((s*PI)/30)-PI/2);
  myGLCD.setColor(0, 0, 0);
  myGLCD.drawLine(cx+R,cy+R,a1p,b1p);
  myGLCD.setColor(255, 0, 0);
@@ -62,7 +67,6 @@ void drawMinPaw(int m,int len){
  //b1 = cy+R+ 0.9*len*cos((60-i)*2*PI/60+PI);
  a1 = cx+R + len*cos(((m*PI)/30)-PI/2);
  b1 = cy+R + len*sin(((m*PI)/30)-PI/2);
-
  myGLCD.setColor(0, 0, 0);
  myGLCD.drawLine(cx+R,cy+R,a1pm,b1pm);
  myGLCD.drawLine(cx+R+1,cy+R+1,a1pm+1,b1pm+1);
@@ -93,16 +97,19 @@ void drawHrPaw(int h,int m,int len){
  b1ph=b1;
 }
 
+
 void loop()
 {
 
-for (int i=0; i<7200; ++i) 
- { 
-  drawHrPaw(i/60,i%60,R/2);   
-  drawMinPaw(i%60,R-10);
-  //drawSecPaw(i*3,R);
+//for (uint32_t i=start; i<12*60*60; i++) 
+ //{ 
+  drawHrPaw(i/60/60,i/60%60,R/2);   
+  drawMinPaw(i/60%60,R-20);
+  drawSecPaw(i%60,R-7);
   delay(1000);
- }
+  i+=1;
+  if (i==12*60*60-1){start=0;}
+// }
 
 
 }    
