@@ -1,0 +1,128 @@
+#include <UTFTGLUE.h>
+#include <GyverUART.h>
+#include "fontsrus/FreeSans10.h"
+
+//#include <FreeDefaultFonts.h>              
+UTFTGLUE myGLCD(0,A2,A1,A3,A4,A0); // выводы чисто заглушки
+
+String utf8rus(String source)
+{
+  int i,k;
+  String target;
+  unsigned char n;
+  char m[2] = { '0', '\0' };
+
+  k = source.length(); i = 0;
+
+  while (i < k) {
+    n = source[i]; i++;
+
+    if (n >= 0xC0) {
+      switch (n) {
+        case 0xD0: {
+          n = source[i]; i++;
+          if (n == 0x81) { n = 0xA8; break; }
+          if (n >= 0x90 && n <= 0xBF) n = n + 0x30;
+          break;
+        }
+        case 0xD1: {
+          n = source[i]; i++;
+          if (n == 0x91) { n = 0xB8; break; }
+          if (n >= 0x80 && n <= 0x8F) n = n + 0x70;
+          break;
+        }
+      }
+    }
+    m[0] = n; target = target + String(m);
+  }
+return target;
+}
+
+int scr=0;
+String e[17];
+
+void setup()
+{// randomSeed(analogRead(0));
+ uart.begin();//9600 
+// Setup the LCD
+  myGLCD.InitLCD(0);// empty or 1 - landscape? 0  portrait
+  //myGLCD.setFont(SevenSegNumFont);
+  //myGLCD.setFont(&FreeBigFont);
+  //myGLCD.setFont(&FreeSmallFontBitmaps);
+  
+   myGLCD.setFont(&FreeSans10pt8b);
+  
+  myGLCD.setColor(100, 238, 100); //RGB
+  myGLCD.setBackColor(0, 0, 0);
+  myGLCD.clrScr();
+  myGLCD.setCursor(0,14);
+  for (int i=1;i<17;i++){
+   scr+=1; 
+   myGLCD.println(i);
+  }
+ // ---Setup the LCD
+//myGLCD.println("asdfghjklASDFGHJK1234567890");
+//myGLCD.println("asdfghjklASDFGHJK1234567890ФЫВАПРОЛДЖфывапролдж");
+}
+
+
+
+//==================================== void printSpeed(int s)
+int s1prev,s2prev,s3prev;
+void printSpeed(int s){
+ int top=100;
+ int left=140;
+ int width=32;
+ myGLCD.setColor(100, 238, 100); //RGB
+ myGLCD.setBackColor(0, 0, 0);
+ int i1=s/100;
+ int i2=(s/10)%10;
+ int i3=s%10;
+ //myGLCD.printNumI(s, 10, 10, 3," ");// 1 это верх строки
+ if (s1prev!=i1){myGLCD.printNumI(i1, left, top, 1);}
+ if (s2prev!=i2){myGLCD.printNumI(i2, left+width, top, 1);}
+ if (s3prev!=i3){myGLCD.printNumI(i3, left+width+width, top, 1);}
+ s1prev=i1;
+ s2prev=i2;
+ s3prev=i3;
+}
+//==================================== void printSpeed(int s)
+//String s;
+void loop()
+{
+ /* myGLCD.clrScr();
+  myGLCD.setColor(255, 0, 0);
+  myGLCD.fillRect(0, 0, 399, 13);
+  myGLCD.setColor(64, 64, 64);
+  myGLCD.fillRect(0, 226, 399, 239);
+  */
+  if(uart.available()){
+    myGLCD.setColor(100, 238, 100);
+   myGLCD.println(uart.readString());
+   scr+=1;
+  }
+  
+  if (scr>16){
+    //myGLCD.setColor(0, 0, 0);
+    //myGLCD.fillRect(0, 0, 240, 22);
+    //myGLCD.vertScroll(0, 400, 23);
+    myGLCD.setCursor(317, 0);
+  }
+  //myGLCD.setColor(0, 0, 0);
+  //myGLCD.fillRect(0, 390, 240, 400);
+  /*
+  // готовим тестовую надпись скорости
+  
+  for (int i=0 ;i< 1000;i++){
+    printSpeed(i);  
+  delay(300);
+  }
+  */
+  /*
+  // готовим надпись
+  myGLCD.setBackColor(64, 64, 64);
+  myGLCD.setColor(255,255,0);
+  myGLCD.print("1234567890", CENTER, 210);// 210 это верх строки  
+  */
+  //delay(5000);
+} 

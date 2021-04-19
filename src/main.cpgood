@@ -1,0 +1,188 @@
+#if 1
+
+#include <Adafruit_GFX.h>
+#include <MCUFRIEND_kbv.h>
+MCUFRIEND_kbv tft;
+#include <TouchScreen.h>
+#define MINPRESSURE 200
+#define MAXPRESSURE 1000
+
+// ALL Touch panels and wiring is DIFFERENT
+// copy-paste results from TouchScreen_Calibr_native.ino
+
+// 
+/* this string for ili9327 */
+const int XP = 6, XM = A2, YP = A1, YM = 7; //ID=0x9341
+
+
+
+
+const int TS_LEFT = 907, TS_RT = 136, TS_TOP = 942, TS_BOT = 139;
+
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
+Adafruit_GFX_Button on_btn, off_btn, b1_btn, b2_btn, b3_btn, b4_btn, b5_btn, b6_btn;
+int c=0;
+int test=0;
+
+int pixel_x, pixel_y;     //Touch_getXY() updates global vars
+bool Touch_getXY(void)
+{
+    TSPoint p = ts.getPoint();
+    pinMode(YP, OUTPUT);      //restore shared pins
+    pinMode(XM, OUTPUT);
+    digitalWrite(YP, HIGH);   //because TFT control pins
+    digitalWrite(XM, HIGH);
+    bool pressed = (p.z > MINPRESSURE && p.z < MAXPRESSURE);
+    if (pressed) {
+        pixel_x = map(p.x, TS_LEFT, TS_RT, 0, tft.width()); //.kbv makes sense to me
+        pixel_y = map(p.y, TS_TOP, TS_BOT, 0, tft.height());
+    }
+    return pressed;
+}
+
+#define BLACK   0x0000
+#define BLUE    0x001F
+#define RED     0xF800
+#define GREEN   0x07E0
+#define CYAN    0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW  0xFFE0
+#define WHITE   0xFFFF
+
+void setup(void)
+{
+    Serial.begin(9600);
+    uint16_t ID = tft.readID();
+    Serial.print("TFT ID = 0x");
+    Serial.println(ID, HEX);
+    Serial.println("Calibrate for your Touch Panel");
+    if (ID == 0xD3D3) ID = 0x9486; // write-only shield
+    tft.begin(ID);
+    tft.setRotation(2);            //PORTRAIT
+    tft.fillScreen(BLACK);
+    on_btn.initButton(&tft,  60, 200, 100, 40, WHITE, CYAN, BLACK, "ON", 3);
+    off_btn.initButton(&tft, 180, 200, 100, 40, WHITE, CYAN, BLACK, "OFF", 3);
+    
+    b1_btn.initButton(&tft,  60, 250, 100, 40, RED, YELLOW, BLACK, "B1", 2);
+    b2_btn.initButton(&tft, 180, 250, 100, 40, RED, YELLOW, BLACK, "B2", 2);
+
+    b3_btn.initButton(&tft,  60, 300, 100, 40, GREEN, WHITE, BLACK, "B3", 2);
+    b4_btn.initButton(&tft, 180, 300, 100, 40, GREEN, WHITE, BLACK, "B4", 2);
+
+    b5_btn.initButton(&tft,  40, 30, 50, 40, WHITE, BLUE, BLACK, "-", 4);
+    b6_btn.initButton(&tft, 200, 30, 50, 40, WHITE, RED, BLACK, "+", 4);
+
+    on_btn.drawButton(false);
+    off_btn.drawButton(false);
+    b1_btn.drawButton(false);
+    b2_btn.drawButton(false);
+    b3_btn.drawButton(false);
+    b4_btn.drawButton(false);
+    b5_btn.drawButton(false);
+    b6_btn.drawButton(false);
+    tft.fillRect(40, 80, 160, 80, RED);
+}
+
+/* two buttons are quite simple
+ */
+void loop(void)
+{
+    bool down = Touch_getXY();
+    on_btn.press(down && on_btn.contains(pixel_x, pixel_y));
+    off_btn.press(down && off_btn.contains(pixel_x, pixel_y));
+    b1_btn.press(down && b1_btn.contains(pixel_x, pixel_y));
+    b2_btn.press(down && b2_btn.contains(pixel_x, pixel_y));
+    b3_btn.press(down && b3_btn.contains(pixel_x, pixel_y));
+    b4_btn.press(down && b4_btn.contains(pixel_x, pixel_y));
+    b5_btn.press(down && b5_btn.contains(pixel_x, pixel_y));
+    b6_btn.press(down && b6_btn.contains(pixel_x, pixel_y));
+    if (on_btn.justReleased())
+        on_btn.drawButton();
+    if (off_btn.justReleased())
+        off_btn.drawButton();
+    if (b1_btn.justReleased())
+        b1_btn.drawButton();
+    if (b2_btn.justReleased())
+        b2_btn.drawButton();
+    if (b3_btn.justReleased())
+        b3_btn.drawButton();
+    if (b4_btn.justReleased())
+        b4_btn.drawButton();
+    if (b5_btn.justReleased())
+        b5_btn.drawButton();
+    if (b6_btn.justReleased())
+        b6_btn.drawButton();
+
+
+    if (on_btn.justPressed()) {
+        on_btn.drawButton(true);
+        tft.fillRect(40, 80, 160, 80, GREEN);
+        c+=1;
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,90);
+        tft.print("ON");tft.print("   ");tft.print(c);
+    }
+    if (off_btn.justPressed()) {
+        off_btn.drawButton(true);
+        tft.fillRect(40, 80, 160, 80, RED);
+        c+=1;
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,90);
+        tft.print("OFF");tft.print("  ");tft.print(c);
+    }
+    if (b1_btn.justPressed()) {
+        b1_btn.drawButton(true);
+        tft.fillRect(40, 80, 160, 80, YELLOW);
+        c+=1;
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,90);
+        tft.print("OFF");tft.print("  ");tft.print(c);
+    }
+    if (b2_btn.justPressed()) {
+        b2_btn.drawButton(true);
+        tft.fillRect(40, 80, 160, 80, WHITE);
+        c+=1;
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,90);
+        tft.print("OFF");tft.print("  ");tft.print(c);
+    }
+    if (b3_btn.justPressed()) {
+        b3_btn.drawButton(true);
+        tft.fillRect(40, 80, 160, 80, YELLOW);
+        c+=1;
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,90);
+        tft.print("OFF");tft.print("  ");tft.print(c);
+    }
+    if (b4_btn.justPressed()) {
+        b4_btn.drawButton(true);
+        tft.fillRect(40, 80, 160, 80, WHITE);
+        c+=1;
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,90);
+        tft.print("OFF");tft.print("  ");tft.print(c);
+    }
+    if (b5_btn.justPressed()) {
+        b5_btn.drawButton(true);
+        tft.fillRect(80, 00, 80, 40, BLACK);
+        if (test>0) {test-=1;}
+        tft.setTextColor(BLUE);
+        tft.setCursor(90,10);
+        tft.print(test);
+    }
+    if (b6_btn.justPressed()) {
+        b6_btn.drawButton(true);
+        tft.fillRect(80, 0, 80, 40, BLACK);
+        test+=1;
+        tft.setTextColor(RED);
+        tft.setCursor(90,10);
+        tft.print(test);
+    }
+
+
+    delay(100);
+}
+#endif
+
+
