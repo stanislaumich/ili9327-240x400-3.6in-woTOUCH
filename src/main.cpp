@@ -5,16 +5,20 @@
 
 
 UTFTGLUE myGLCD(0,A2,A1,A3,A4,A0); // выводы чисто заглушки
-int R=80;
+int R=100;
 int a1,a2,b1,b2;
 int cx,cy;
 
-int hourstart=9;
-int minstart=48;
-uint32_t start;
-volatile uint32_t i;
+//int hourstart=8;
+//int minstart=9;
+//uint32_t start;
+//volatile uint32_t i;
 
 int a1p, b1p,a1pm,b1pm,a1ph,b1ph;
+
+volatile int hr=2;
+volatile int min = 16;
+volatile int sec=0;
 
 void drawSecPaw(int s,int len){
  //a1 = cx+R+ 0.9*len*sin((60-i)*2*PI/60+PI);
@@ -28,7 +32,6 @@ void drawSecPaw(int s,int len){
  a1p=a1;
  b1p=b1;
 }
-
 void drawMinPaw(int m,int len){
  //a1 = cx+R+ 0.9*len*sin((60-i)*2*PI/60+PI);
  //b1 = cy+R+ 0.9*len*cos((60-i)*2*PI/60+PI);
@@ -45,7 +48,6 @@ void drawMinPaw(int m,int len){
  a1pm=a1;
  b1pm=b1;
 }
-
 void drawHrPaw(int h,int m,int len){
  //a1 = cx+R+ 0.9*len*sin((60-i)*2*PI/60+PI);
  //b1 = cy+R+ 0.9*len*cos((60-i)*2*PI/60+PI);
@@ -66,12 +68,13 @@ void drawHrPaw(int h,int m,int len){
 
 
 ISR(TIMER1_A) {   
-  drawHrPaw(i/60/60,i/60%60,R/2);   
-  drawMinPaw(i/60%60,R-20);
-  drawSecPaw(i%60,R-7);
-  delay(1000);
-  i+=1;
-  if (i==12*60*60-1){start=0;}
+  drawHrPaw(hr,min,R/2);   
+  drawMinPaw(min,R-20);
+  drawSecPaw(sec,R-7);  
+  sec+=1;
+  if(sec==60){sec=0;min+=1;}
+  if(min==60){min=0;hr+=1;}
+  if(hr==12){hr=0;}
 }
 
 void setup()
@@ -89,7 +92,7 @@ void setup()
 
 
 
-// рисуем циферблат
+// рисуем циферблат 200 120 это центр экрана
 cx=200-(R);
 cy=120-(R);// center
 
@@ -108,15 +111,9 @@ else{
   myGLCD.setColor(100, 238, 100);
   myGLCD.drawLine(a1,b1,a2,b2);
 };
-
-
-
-
 };// циферблат готов
 
-i=hourstart*60*60+minstart*60;
-
-  Timer1.setFrequency(1);     
+// настроим таймер времени и запустим его    
   Timer1.setPeriod(1000000);
   Timer1.enableISR();
 }
@@ -124,17 +121,6 @@ i=hourstart*60*60+minstart*60;
 
 void loop()
 {
-
-//for (uint32_t i=start; i<12*60*60; i++) 
- //{ 
- /* drawHrPaw(i/60/60,i/60%60,R/2);   
-  drawMinPaw(i/60%60,R-20);
-  drawSecPaw(i%60,R-7);
-  delay(1000);
-  i+=1;
-  if (i==12*60*60-1){start=0;}
-  */
-// }
 
 
 }    
