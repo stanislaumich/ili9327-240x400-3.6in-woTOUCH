@@ -1,7 +1,7 @@
 #include <UTFTGLUE.h>
 #include <GyverUART.h>
 #include "GyverTimers.h"
-
+#include "fontsrus/FreeSans10.h"
 
 
 UTFTGLUE myGLCD(0,A2,A1,A3,A4,A0); // выводы чисто заглушки
@@ -9,15 +9,11 @@ int R=100;
 int a1,a2,b1,b2;
 int cx,cy;
 
-//int hourstart=8;
-//int minstart=9;
-//uint32_t start;
-//volatile uint32_t i;
 
 int a1p, b1p,a1pm,b1pm,a1ph,b1ph;
 
-volatile int hr=2;
-volatile int min = 16;
+volatile int hr=0;
+volatile int min = 24;
 volatile int sec=0;
 
 void drawSecPaw(int s,int len){
@@ -70,7 +66,15 @@ void drawHrPaw(int h,int m,int len){
 ISR(TIMER1_A) {   
   drawHrPaw(hr,min,R/2);   
   drawMinPaw(min,R-20);
-  drawSecPaw(sec,R-7);  
+  drawSecPaw(sec,R-7);
+  
+  /*myGLCD.setCursor(0,14);
+  myGLCD.printNumI(hr,10,10,2,'0');
+  //myGLCD.print(':');  
+  myGLCD.printNumI(min,40,10,2,'0');
+  //myGLCD.print(":");  
+  myGLCD.printNumI(sec,70,10,2,'0');
+  */
   sec+=1;
   if(sec==60){sec=0;min+=1;}
   if(min==60){min=0;hr+=1;}
@@ -80,8 +84,8 @@ ISR(TIMER1_A) {
 void setup()
 {
  uart.begin();//9600 
- myGLCD.InitLCD(1);// empty or 1 - landscape? 0  portrait
- //myGLCD.setFont(&FreeSans10pt8b);
+ myGLCD.InitLCD(1);// empty or 1 - landscape, 0  portrait
+ myGLCD.setFont(&FreeSans10pt8b);
   
   myGLCD.setColor(100, 238, 100); //RGB
   myGLCD.setBackColor(0, 0, 0);
@@ -114,7 +118,7 @@ else{
 };// циферблат готов
 
 // настроим таймер времени и запустим его    
-  Timer1.setPeriod(1000000);
+  Timer1.setPeriod(990000);
   Timer1.enableISR();
 }
 
